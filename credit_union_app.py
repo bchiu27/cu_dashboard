@@ -15,7 +15,7 @@ st.title("Credit Union Executive Compensation Dashboard")
 @st.cache_data
 def load_data():
     df = pd.read_excel(
-        r"c:\Users\bchiu\Downloads\credit_union\credit_union_data.xlsx",
+        "credit_union_data.xlsx",
         sheet_name="CEO_Comp",
         dtype={
             "name": str,
