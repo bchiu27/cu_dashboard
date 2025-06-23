@@ -183,12 +183,56 @@ df = load_data()
 # # Display the main plot with dropdown
 # st.plotly_chart(fig, use_container_width=True)
 
-# Alternative selection method using Streamlit selectbox
+# Streamlit dropdown
 st.subheader("Excutive Compensation Section")
 selected_cu = st.selectbox('Select Credit Union', df['name'].unique())
 
 # Filter data for selected credit union
 selected_subset = df[df['name'] == selected_cu]
+shapes_selected = []
+ceo_change_years = selected_subset[selected_subset['ceo_change'] == True]['year'].tolist()
+ma_years = selected_subset[selected_subset['m_or_a'] == True]['year'].tolist()
+
+all_years = sorted(set(ceo_change_years + ma_years))
+
+# Add vertical lines for the CEO name change years and Merger and Acquisition years
+
+def add_financial_vertical_lines(fig, ceo_subset=selected_subset):
+    if not ceo_subset.empty:
+        ceo_change_years = ceo_subset[ceo_subset['ceo_change'] == True]['year'].tolist()
+        ma_years = ceo_subset[ceo_subset['m_or_a'] == True]['year'].tolist()
+        
+        all_years = sorted(set(ceo_change_years + ma_years))
+        
+        for year in all_years:
+            if year in ceo_change_years and year in ma_years:
+                # CEO change line (slightly left)
+                fig.add_vline(x=year-0.1, line_color="green", line_width=3, line_dash="dash")
+                # M&A line (slightly right)  
+                fig.add_vline(x=year+0.1, line_color="brown", line_width=3, line_dash="dash")
+            else:
+                if year in ceo_change_years:
+                    fig.add_vline(x=year, line_color="green", line_width=3, line_dash="dash")
+                if year in ma_years:
+                    fig.add_vline(x=year, line_color="brown", line_width=3, line_dash="dash")
+    fig.add_annotation(
+    text="Green dashed lines = CEO Changes",
+    x=0.02, y=0.98,
+    xref="paper", yref="paper",
+    showarrow=False,
+    font=dict(color="green", size=12),
+    bgcolor="rgba(255,255,255,0.8)"
+    )
+    fig.add_annotation(
+    text="Brown dashed lines = Merger/Acquisition",
+    x=0.02, y=0.93,
+    xref="paper", yref="paper",
+    showarrow=False,
+    font=dict(color="brown", size=12),
+    bgcolor="rgba(255,255,255,0.8)"
+    )
+        
+    return fig
 
 # Create a separate figure for the selected credit union
 fig_selected = go.Figure()
@@ -207,57 +251,36 @@ fig_selected.add_trace(
     )
 )
 
-# Add vertical lines for CEO changes and M&A for selected credit union
-shapes_selected = []
-ceo_change_years = selected_subset[selected_subset['ceo_change'] == True]['year'].tolist()
-ma_years = selected_subset[selected_subset['m_or_a'] == True]['year'].tolist()
 
-all_years = sorted(set(ceo_change_years + ma_years))
-
-for year in all_years:
-    if year in ceo_change_years and year in ma_years:
-        # Modify the shapes to offset overlapping years
-        # CEO change line (slightly left)
-        shapes_selected.append(dict(
-            type="line", x0=year-0.1, x1=year-0.1,
-            y0=0, y1=1, yref="paper",
-            line=dict(color="green", width=3, dash="dash")
-        ))
-        # M&A line (slightly right)  
-        shapes_selected.append(dict(
-            type="line", x0=year+0.1, x1=year+0.1,
-            y0=0, y1=1, yref="paper",
-            line=dict(color="brown", width=3, dash="dash")
-        ))
-    else:
-        if year in ceo_change_years:
-            shapes_selected.append(dict(
-                type="line", x0=year, x1=year,
-                y0=0, y1=1, yref="paper",
-                line=dict(color="green", width=3, dash="dash")
-            ))
-        if year in ma_years:
-            shapes_selected.append(dict(
-                type="line", x0=year, x1=year,
-                y0=0, y1=1, yref="paper",
-                line=dict(color="brown", width=3, dash="dash")
-            ))
-fig_selected.add_annotation(
-    text="Green dashed lines = CEO Changes",
-    x=0.02, y=0.98,
-    xref="paper", yref="paper",
-    showarrow=False,
-    font=dict(color="green", size=12),
-    bgcolor="rgba(255,255,255,0.8)"
-)
-fig_selected.add_annotation(
-    text="Brown dashed lines = Merger/Acquisition",
-    x=0.02, y=0.93,
-    xref="paper", yref="paper",
-    showarrow=False,
-    font=dict(color="brown", size=12),
-    bgcolor="rgba(255,255,255,0.8)"
-)
+# for year in all_years:
+#     if year in ceo_change_years and year in ma_years:
+#         # Modify the shapes to offset overlapping years
+#         # CEO change line (slightly left)
+#         shapes_selected.append(dict(
+#             type="line", x0=year-0.1, x1=year-0.1,
+#             y0=0, y1=1, yref="paper",
+#             line=dict(color="green", width=3, dash="dash")
+#         ))
+#         # M&A line (slightly right)  
+#         shapes_selected.append(dict(
+#             type="line", x0=year+0.1, x1=year+0.1,
+#             y0=0, y1=1, yref="paper",
+#             line=dict(color="brown", width=3, dash="dash")
+#         ))
+#     else:
+#         if year in ceo_change_years:
+#             shapes_selected.append(dict(
+#                 type="line", x0=year, x1=year,
+#                 y0=0, y1=1, yref="paper",
+#                 line=dict(color="green", width=3, dash="dash")
+#             ))
+#         if year in ma_years:
+#             shapes_selected.append(dict(
+#                 type="line", x0=year, x1=year,
+#                 y0=0, y1=1, yref="paper",
+#                 line=dict(color="brown", width=3, dash="dash")
+#             ))
+add_financial_vertical_lines(fig_selected)
 fig_selected.update_layout(
     title=f"Total Executive Compensation: {selected_cu}",
     xaxis_title='Year',
@@ -297,37 +320,13 @@ def load_financial_data():
 df_financial = load_financial_data()
 
 # Financial Dashboard Section
-st.subheader("Financial Performance Dashboard")
+st.subheader("Financial Performance Section")
 
-# Use the same selected credit union from the executive compensation dropdown above
-selected_cu_financial = selected_cu  # Use the same selection from above
+# Use the same selected credit union from the dropdown above
+selected_cu_financial = selected_cu  # Same as above
 
 # Filter financial data for selected credit union
 selected_financial_subset = df_financial[df_financial['name'] == selected_cu_financial]
-
-# Get CEO data for the same credit union to add vertical lines (already filtered above)
-selected_ceo_subset = selected_subset  # Use the same CEO data from above
-
-# Function to add vertical lines to financial charts
-def add_financial_vertical_lines(fig, ceo_subset):
-    if not ceo_subset.empty:
-        ceo_change_years = ceo_subset[ceo_subset['ceo_change'] == True]['year'].tolist()
-        ma_years = ceo_subset[ceo_subset['m_or_a'] == True]['year'].tolist()
-        
-        all_years = sorted(set(ceo_change_years + ma_years))
-        
-        for year in all_years:
-            if year in ceo_change_years and year in ma_years:
-                # CEO change line (slightly left)
-                fig.add_vline(x=year-0.1, line_color="green", line_width=3, line_dash="dash")
-                # M&A line (slightly right)  
-                fig.add_vline(x=year+0.1, line_color="brown", line_width=3, line_dash="dash")
-            else:
-                if year in ceo_change_years:
-                    fig.add_vline(x=year, line_color="green", line_width=3, line_dash="dash")
-                if year in ma_years:
-                    fig.add_vline(x=year, line_color="brown", line_width=3, line_dash="dash")
-    return fig
 
 # Create 2x2 layout using columns
 col1, col2 = st.columns(2)
@@ -347,7 +346,7 @@ with col1:
                          '<extra></extra>'
         )
     )
-    fig1 = add_financial_vertical_lines(fig1, selected_ceo_subset)
+    fig1 = add_financial_vertical_lines(fig1)
     fig1.update_layout(
         title=f"Total Revenue: {selected_cu_financial}",
         xaxis_title='Year',
@@ -371,7 +370,7 @@ with col1:
                          '<extra></extra>'
         )
     )
-    fig3 = add_financial_vertical_lines(fig3, selected_ceo_subset)
+    fig3 = add_financial_vertical_lines(fig3)
     fig3.update_layout(
         title=f"Net Income: {selected_cu_financial}",
         xaxis_title='Year',
@@ -396,7 +395,7 @@ with col2:
                          '<extra></extra>'
         )
     )
-    fig2 = add_financial_vertical_lines(fig2, selected_ceo_subset)
+    fig2 = add_financial_vertical_lines(fig2)
     fig2.update_layout(
         title=f"Total Assets: {selected_cu_financial}",
         xaxis_title='Year',
@@ -420,7 +419,7 @@ with col2:
                          '<extra></extra>'
         )
     )
-    fig4 = add_financial_vertical_lines(fig4, selected_ceo_subset)
+    fig4 = add_financial_vertical_lines(fig4)
     fig4.update_layout(
         title=f"Investment Income: {selected_cu_financial}",
         xaxis_title='Year',
@@ -429,10 +428,3 @@ with col2:
     )
     fig4.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig4, use_container_width=True)
-
-# Add legend for vertical lines
-st.markdown("""
-**Legend:**
-- 🟢 **Green dashed lines** = CEO Changes
-- 🟤 **Brown dashed lines** = Merger/Acquisition Events
-""")
