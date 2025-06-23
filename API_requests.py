@@ -11,7 +11,6 @@ cu_list = [
     "Five Star Credit Union",
     "Greenstate Credit Union",
     "Wings Financial Credit Union",
-    "Achieva Credit Union",
     "Alabama One Credit Union",
     "Avadian Credit Union",
     "Crane Credit Union",
@@ -86,13 +85,13 @@ def get_credit_union_data(ein):
             df["name"] = fixed_name
 
     #Filter relevant columns
-    df = df[["name", "ein", "tax_prd_yr", "totassetsend", "totliabend", "totrevenue", "totfuncexpns", "compnsatncurrofcr", "invstmntinc"]]
+    df = df[["name", "ein", "tax_prd_yr", "totassetsend", "totliabend", "totrevenue", "totfuncexpns", "invstmntinc"]]
     df.rename(columns={
+        "tax_prd_yr": "Year",
         "totassetsend": "Total Assets",
         "totliabend": "Total Liabilities",
         "totrevenue": "Total Revenue",
         "totfuncexpns": "Total Expenses",
-        "compnsatncurrofcr": "Total Executive Comp",
         "invstmntinc": "Investment Income"
     }, inplace=True)
     return df
@@ -161,13 +160,14 @@ for cu in cu_list:
 
 if all_cu_data:
     combined_df = pd.concat(all_cu_data, ignore_index=True)
+    combined_df['Net Income'] = combined_df['Total Revenue'] - combined_df['Total Expenses']
     # Download the data to Excel file
     with pd.ExcelWriter('credit_union_data.xlsx', engine='openpyxl') as writer:
-        combined_df.to_excel(writer, sheet_name='Form_990_data', index=False)
+        combined_df.to_excel(writer, sheet_name='Financials', index=False)
 else:
     print("No data found for any credit unions.")
 
-
+print(combined_df)
 
 """ credit_union_name = input("Enter the name of the credit union: ")
 ein, name = get_credit_union_ein(credit_union_name)

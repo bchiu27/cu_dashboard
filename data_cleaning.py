@@ -143,7 +143,4 @@ def add_ceo_sheet(dataframe, filename='credit_union_data.xlsx'):
         dataframe.to_excel(filename, sheet_name='CEO_Comp', index=False)
     except Exception as e:
         print(f"Error: {e}")
-        # Backup: save as separate file
-        backup_filename = 'ceo_compensation_backup.xlsx'
-        dataframe.to_excel(backup_filename, sheet_name='CEO_Comp', index=False)
 add_ceo_sheet(df_clean)
