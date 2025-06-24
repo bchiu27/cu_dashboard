@@ -28,7 +28,7 @@ def load_data():
     return df.sort_values(by=['name', 'year'])
 
 df = load_data()
-
+# region
 # Create figure
 # fig = go.Figure()
 
@@ -59,7 +59,7 @@ df = load_data()
 #     subset = df[df['name'] == name]
 #     ceo_change_years = subset[subset['ceo_change'] == True]['year'].tolist()
 #     ma_years = subset[subset['m_or_a'] == True]['year'].tolist()
-    
+#
 #     # Create shapes for vertical lines: green for CEO changes, brown for mergers/acquisitions
 #     shapes = []
 #     all_years = sorted(set(ceo_change_years + ma_years))  # Get unique years
@@ -182,9 +182,10 @@ df = load_data()
 
 # # Display the main plot with dropdown
 # st.plotly_chart(fig, use_container_width=True)
+#endregion
 
 # Streamlit dropdown
-st.subheader("Excutive Compensation Section")
+st.subheader("Executive Compensation Section")
 selected_cu = st.selectbox('Select Credit Union', df['name'].unique())
 
 # Filter data for selected credit union
@@ -201,7 +202,6 @@ def add_financial_vertical_lines(fig, ceo_subset=selected_subset):
     if not ceo_subset.empty:
         ceo_change_years = ceo_subset[ceo_subset['ceo_change'] == True]['year'].tolist()
         ma_years = ceo_subset[ceo_subset['m_or_a'] == True]['year'].tolist()
-        
         all_years = sorted(set(ceo_change_years + ma_years))
         
         for year in all_years:
@@ -286,7 +286,12 @@ fig_selected.update_layout(
     xaxis_title='Year',
     yaxis_title='Total Compensation (USD)',
     height=600,
-    shapes=shapes_selected
+    shapes=shapes_selected,
+    hoverlabel=dict(
+            bgcolor='white',
+            font=dict(color='black', size=12),
+            bordercolor='black'
+    )
 )
 
 fig_selected.update_xaxes(
@@ -316,19 +321,17 @@ def load_financial_data():
             "Investment Income": float
         })
 
-# Load financial data
 df_financial = load_financial_data()
 
-# Financial Dashboard Section
 st.subheader("Financial Performance Section")
 
 # Use the same selected credit union from the dropdown above
-selected_cu_financial = selected_cu  # Same as above
+selected_cu_financial = selected_cu  
 
 # Filter financial data for selected credit union
 selected_financial_subset = df_financial[df_financial['name'] == selected_cu_financial]
 
-# Create 2x2 layout using columns
+# Create 2 by 2 layout using columns
 col1, col2 = st.columns(2)
 
 with col1:
@@ -351,7 +354,13 @@ with col1:
         title=f"Total Revenue: {selected_cu_financial}",
         xaxis_title='Year',
         yaxis_title='Total Revenue (USD)',
-        height=400
+        height=400,
+        hoverlabel=dict(
+            bgcolor='white',
+            font=dict(color='black', size=12),
+            bordercolor='black'
+        
+    )
     )
     fig1.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig1, use_container_width=True)
@@ -375,7 +384,12 @@ with col1:
         title=f"Net Income: {selected_cu_financial}",
         xaxis_title='Year',
         yaxis_title='Net Income (USD)',
-        height=400
+        height=400,
+       hoverlabel=dict(
+            bgcolor='white',
+            font=dict(color='black', size=12),
+            bordercolor='black'
+    )
     )
     fig3.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig3, use_container_width=True)
@@ -400,7 +414,12 @@ with col2:
         title=f"Total Assets: {selected_cu_financial}",
         xaxis_title='Year',
         yaxis_title='Total Assets (USD)',
-        height=400
+        height=400,
+        hoverlabel=dict(
+            bgcolor='white',
+            font=dict(color='black', size=12),
+            bordercolor='black'
+        )
     )
     fig2.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig2, use_container_width=True)
@@ -424,7 +443,12 @@ with col2:
         title=f"Investment Income: {selected_cu_financial}",
         xaxis_title='Year',
         yaxis_title='Investment Income (USD)',
-        height=400
+        height=400,
+        hoverlabel=dict(
+            bgcolor='white',
+            font=dict(color='black', size=12),
+            bordercolor='black'
+        )
     )
     fig4.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig4, use_container_width=True)
