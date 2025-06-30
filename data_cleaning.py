@@ -18,6 +18,7 @@ df = df.dropna(subset=["compensation"])
 # print(df[df['other'].isnull()])
 df = df.fillna(0)
 print(df)
+
 def standardize_ceo_names(df):
     """Standardize CEO names by grouping any names that share first or last name,
        then replacing each group with its most frequent name.
@@ -64,8 +65,11 @@ def standardize_ceo_names(df):
                 ] = canonical
 
     return df
+
 df_clean = standardize_ceo_names(df)
 def ceo_comparison(df):
+    """ Compare CEO names year-over-year for each credit union (CU).
+        Add a column 'ceo_change' that is True if the CEO changed from the previous"""
     df_clean = df.copy()
     # 1) Sort so each CU’s years are consecutive
     df_clean = df_clean.sort_values(['name','year'])

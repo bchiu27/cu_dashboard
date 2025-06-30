@@ -3,9 +3,9 @@ import numpy as np
 import requests
 import re
 
-ein = "381686050"   #EIN for Credit Union
-url = f"https://projects.propublica.org/nonprofits/api/v2/organizations/{ein}.json"
-params = {"q": "Advia Credit Union"}
+# ein = "381686050"   #EIN for Credit Union
+# url = f"https://projects.propublica.org/nonprofits/api/v2/organizations/{ein}.json"
+# params = {"q": "Advia Credit Union"}
 cu_list = [
     "Advia Credit Union",
     "Five Star Credit Union",

@@ -198,7 +198,8 @@ all_years = sorted(set(ceo_change_years + ma_years))
 
 # Add vertical lines for the CEO name change years and Merger and Acquisition years
 
-def add_financial_vertical_lines(fig, ceo_subset=selected_subset):
+def add_financial_vertical_lines(fig, selected_cu_name):
+    ceo_subset = selected_subset[selected_subset['name'] == selected_cu_name] if not selected_subset.empty else pd.DataFrame()
     if not ceo_subset.empty:
         ceo_change_years = ceo_subset[ceo_subset['ceo_change'] == True]['year'].tolist()
         ma_years = ceo_subset[ceo_subset['m_or_a'] == True]['year'].tolist()
@@ -280,7 +281,7 @@ fig_selected.add_trace(
 #                 y0=0, y1=1, yref="paper",
 #                 line=dict(color="brown", width=3, dash="dash")
 #             ))
-add_financial_vertical_lines(fig_selected)
+add_financial_vertical_lines(fig_selected, selected_cu)
 fig_selected.update_layout(
     title=f"Total Executive Compensation: {selected_cu}",
     xaxis_title='Year',
@@ -308,7 +309,7 @@ st.plotly_chart(fig_selected, use_container_width=True)
 def load_financial_data():
     return pd.read_excel(
         "credit_union_data.xlsx",
-        sheet_name="Combined_Financials",
+        sheet_name="Combined_Financials_2",
         dtype={
             "name": str,
             "ein": str,
@@ -318,7 +319,10 @@ def load_financial_data():
             "Net Income": float,
             "Total Assets": float,
             "Total Liabilities": float,
-            "Investment Income": float
+            "Investment Income": float,
+            "Cash On Hand": float,
+            "Total Loans & Leases": float,
+            "Commercial and Industrial Loans": float
         })
 
 df_financial = load_financial_data()
@@ -331,59 +335,71 @@ selected_cu_financial = selected_cu
 # Filter financial data for selected credit union
 selected_financial_subset = df_financial[df_financial['name'] == selected_cu_financial]
 
+# Define available financial variables
+financial_variables = [
+    'Total Revenue', 'Total Expenses', 'Net Income', 'Total Assets', 
+    'Total Liabilities', 'Investment Income', 'Cash On Hand', 
+    'Total Loans & Leases', 'Commercial and Industrial Loans'
+]
+
 # Create 2 by 2 layout using columns
 col1, col2 = st.columns(2)
 
 with col1:
-    # Graph 1: Total Revenue
-    st.subheader("Total Revenue")
+    # Graph 1: Selectable Financial Variable
+    selected_var1 = st.selectbox('Select Financial Variable (Graph 1):', financial_variables, index=0)
+    data_subset1 = selected_financial_subset.dropna(subset=[selected_var1]).sort_values('Year')
+    
+    st.subheader(f"{selected_var1}")
     fig1 = go.Figure()
     fig1.add_trace(
         go.Scatter(
-            x=selected_financial_subset['Year'],
-            y=selected_financial_subset['Total Revenue'],
-            name='Total Revenue',
+            x=data_subset1['Year'],
+            y=data_subset1[selected_var1],
+            name=selected_var1,
             line=dict(color='blue'),
             hovertemplate='<b>Year:</b> %{x}<br>' +
-                         '<b>Total Revenue:</b> $%{y:,.0f}<br>' +
+                         f'<b>{selected_var1}:</b> $%{{y:,.0f}}<br>' +
                          '<extra></extra>'
         )
     )
-    fig1 = add_financial_vertical_lines(fig1)
+    fig1 = add_financial_vertical_lines(fig1, selected_cu_financial)
     fig1.update_layout(
-        title=f"Total Revenue: {selected_cu_financial}",
+        title=f"{selected_var1}: {selected_cu_financial}",
         xaxis_title='Year',
-        yaxis_title='Total Revenue (USD)',
+        yaxis_title=f'{selected_var1} (USD)',
         height=400,
         hoverlabel=dict(
             bgcolor='white',
             font=dict(color='black', size=12),
             bordercolor='black'
-        
-    )
+        )
     )
     fig1.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig1, use_container_width=True)
     
-    # Graph 3: Net Income
-    st.subheader("Net Income")
+    # Graph 3: Selectable Financial Variable
+    selected_var3 = st.selectbox('Select Financial Variable (Graph 3):', financial_variables, index=2)
+    data_subset3 = selected_financial_subset.dropna(subset=[selected_var3]).sort_values('Year')
+    
+    st.subheader(f"{selected_var3}")
     fig3 = go.Figure()
     fig3.add_trace(
         go.Scatter(
-            x=selected_financial_subset['Year'],
-            y=selected_financial_subset['Net Income'],
-            name='Net Income',
+            x=data_subset3['Year'],
+            y=data_subset3[selected_var3],
+            name=selected_var3,
             line=dict(color='green'),
             hovertemplate='<b>Year:</b> %{x}<br>' +
-                         '<b>Net Income:</b> $%{y:,.0f}<br>' +
+                         f'<b>{selected_var3}:</b> $%{{y:,.0f}}<br>' +
                          '<extra></extra>'
         )
     )
-    fig3 = add_financial_vertical_lines(fig3)
+    fig3 = add_financial_vertical_lines(fig3, selected_cu_financial)
     fig3.update_layout(
-        title=f"Net Income: {selected_cu_financial}",
+        title=f"{selected_var3}: {selected_cu_financial}",
         xaxis_title='Year',
-        yaxis_title='Net Income (USD)',
+        yaxis_title=f'{selected_var3} (USD)',
         height=400,
        hoverlabel=dict(
             bgcolor='white',
@@ -395,25 +411,28 @@ with col1:
     st.plotly_chart(fig3, use_container_width=True)
 
 with col2:
-    # Graph 2: Total Assets
-    st.subheader("Total Assets")
+    # Graph 2: Selectable Financial Variable
+    selected_var2 = st.selectbox('Select Financial Variable (Graph 2):', financial_variables, index=3)
+    data_subset2 = selected_financial_subset.dropna(subset=[selected_var2]).sort_values('Year')
+    
+    st.subheader(f"{selected_var2}")
     fig2 = go.Figure()
     fig2.add_trace(
         go.Scatter(
-            x=selected_financial_subset['Year'],
-            y=selected_financial_subset['Total Assets'],
-            name='Total Assets',
+            x=data_subset2['Year'],
+            y=data_subset2[selected_var2],
+            name=selected_var2,
             line=dict(color='red'),
             hovertemplate='<b>Year:</b> %{x}<br>' +
-                         '<b>Total Assets:</b> $%{y:,.0f}<br>' +
+                         f'<b>{selected_var2}:</b> $%{{y:,.0f}}<br>' +
                          '<extra></extra>'
         )
     )
-    fig2 = add_financial_vertical_lines(fig2)
+    fig2 = add_financial_vertical_lines(fig2, selected_cu_financial)
     fig2.update_layout(
-        title=f"Total Assets: {selected_cu_financial}",
+        title=f"{selected_var2}: {selected_cu_financial}",
         xaxis_title='Year',
-        yaxis_title='Total Assets (USD)',
+        yaxis_title=f'{selected_var2} (USD)',
         height=400,
         hoverlabel=dict(
             bgcolor='white',
@@ -424,25 +443,28 @@ with col2:
     fig2.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig2, use_container_width=True)
     
-    # Graph 4: Investment Income
-    st.subheader("Investment Income")
+    # Graph 4: Selectable Financial Variable
+    selected_var4 = st.selectbox('Select Financial Variable (Graph 4):', financial_variables, index=5)
+    data_subset4 = selected_financial_subset.dropna(subset=[selected_var4]).sort_values('Year')
+    
+    st.subheader(f"{selected_var4}")
     fig4 = go.Figure()
     fig4.add_trace(
         go.Scatter(
-            x=selected_financial_subset['Year'],
-            y=selected_financial_subset['Investment Income'],
-            name='Investment Income',
+            x=data_subset4['Year'],
+            y=data_subset4[selected_var4],
+            name=selected_var4,
             line=dict(color='purple'),
             hovertemplate='<b>Year:</b> %{x}<br>' +
-                         '<b>Investment Income:</b> $%{y:,.0f}<br>' +
+                         f'<b>{selected_var4}:</b> $%{{y:,.0f}}<br>' +
                          '<extra></extra>'
         )
     )
-    fig4 = add_financial_vertical_lines(fig4)
+    fig4 = add_financial_vertical_lines(fig4, selected_cu_financial)
     fig4.update_layout(
-        title=f"Investment Income: {selected_cu_financial}",
+        title=f"{selected_var4}: {selected_cu_financial}",
         xaxis_title='Year',
-        yaxis_title='Investment Income (USD)',
+        yaxis_title=f'{selected_var4} (USD)',
         height=400,
         hoverlabel=dict(
             bgcolor='white',
@@ -452,3 +474,4 @@ with col2:
     )
     fig4.update_xaxes(tickmode='linear', dtick=1, tickformat='d')
     st.plotly_chart(fig4, use_container_width=True)
+

@@ -79,7 +79,7 @@ def ceo_comp_scraper(ein_list):
                                     if ceo_data:
                                         print(f"{year}: Found CEO in row 2 - {ceo_data['ceo_name']} - ${ceo_data['total']:,}")
                                 
-                                # Add the result (either CEO data or empty record)
+                                # Add the result (either CEO data or an empty record)
                                 if ceo_data:
                                     results.append(ceo_data)
                                 else:
